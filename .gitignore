@@ -1,0 +1,18 @@
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Python (se usar)
+__pycache__/
+*.pyc
+.env
+
+# Node (se usar)
+node_modules/
+dist/
+
+# Arquivos do Google Drive
+desktop.ini
