@@ -1,11 +1,19 @@
+<<<<<<< HEAD
 
+=======
+#%%
+>>>>>>> reorganizacao-local
 import argparse
 import datetime
 from tqdm import tqdm
 
 import pandas as pd
 import sqlalchemy
+<<<<<<< HEAD
 
+=======
+#%%
+>>>>>>> reorganizacao-local
 def import_query(path):
     with open(path) as open_file:
         query = open_file.read()
@@ -50,7 +58,11 @@ def main():
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--table',  type=str)
+<<<<<<< HEAD
     parser.add_argument('--db_origin',  choices= ['loyalty-system', 'education-platform', 'analytics'],default='loyalty-system')
+=======
+    parser.add_argument('--db_origin',  choices= ['loyalty-system', 'education-platform', 'analytics'], default='loyalty-system')
+>>>>>>> reorganizacao-local
     parser.add_argument('--db_target',  choices= ['analytics'], default='analytics')
 
     now = datetime.datetime.now().strftime('%Y-%m-%d')
