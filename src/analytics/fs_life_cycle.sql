@@ -5,11 +5,7 @@ WITH tb_life_cycle_atual AS (
         descLifeCycle AS descLifeCycleAtual
 
     FROM life_cycle
-<<<<<<< HEAD
     WHERE dtRef = date('{date}', '-1 day')
-=======
-    WHERE dtRef = date('2025-10-01', '-1 day')
->>>>>>> reorganizacao-local
 ),
 
 tb_life_cycle_D28 AS (
@@ -17,11 +13,7 @@ tb_life_cycle_D28 AS (
         IdCliente,
         descLifeCycle AS descLifeCycleD28
     FROM life_cycle
-<<<<<<< HEAD
     WHERE dtRef = date('{date}', '-29 day')
-=======
-    WHERE dtRef = date('2025-10-01', '-29 day')
->>>>>>> reorganizacao-local
 ),
 
 tb_share_ciclos AS (
@@ -36,11 +28,7 @@ tb_share_ciclos AS (
         1. * SUM(CASE WHEN descLifeCycle = '05-ZUMBI' THEN 1 ELSE 0 END) / COUNT (*) AS pctZumbi
 
     FROM life_cycle
-<<<<<<< HEAD
     WHERE dtRef < '{date}'
-=======
-    WHERE dtRef < '2025-10-01'
->>>>>>> reorganizacao-local
 
     ORDER BY IdCliente
 ),
@@ -81,10 +69,6 @@ tb_join AS (
 )
 
 SELECT 
-<<<<<<< HEAD
     date('{date}', '-1 day') AS dtRef,
-=======
-    date('2025-10-01', '-1 day') AS dtRef,
->>>>>>> reorganizacao-local
     *
 FROM tb_join

@@ -48,8 +48,8 @@ def exec_query(table, db_origin, db_target, dt_start, dt_stop, monthly=False):
 def main():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--table',  type=str)
-    parser.add_argument('--db_origin',  choices= ['loyalty-system', 'education-platform', 'analytics'],default='loyalty-system')
+    parser.add_argument('--table',  type=str, help='Tabela que será processada com o nome do arquivo')
+    parser.add_argument('--db_origin',  choices= ['loyalty-system', 'education-platform', 'analytics'], default='loyalty-system')
     parser.add_argument('--db_target',  choices= ['analytics'], default='analytics')
 
     now = datetime.datetime.now().strftime('%Y-%m-%d')

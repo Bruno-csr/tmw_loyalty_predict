@@ -20,11 +20,6 @@ desktop.ini
 #Arquivos Auxiliares
 PassoAPassoGit.txt
 
-<<<<<<< HEAD
 #Base de dados
 database.sqlite3
-=======
-# Bancos locais (pasta no Google Drive)
-# G:\Drives compartilhados\Estudos\TeomeWhy _ Projeto de Dados\loyalty-predict-main
->>>>>>> reorganizacao-local
 database.db
