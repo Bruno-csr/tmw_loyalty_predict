@@ -1,0 +1,7 @@
+name: loyalty-predict
+channels:
+  - defaults
+dependencies:
+  - python=3
+  - ipykernel
+prefix: C:\Users\Bruno\anaconda3\envs\loyalty-predict
