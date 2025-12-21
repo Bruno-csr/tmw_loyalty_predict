@@ -1,4 +1,5 @@
-CREATE TABLE abt_fiel AS
+
+CREATE TABLE IF NOT EXISTS abt_fiel  AS 
 
 WITH tb_join AS (
 
@@ -146,3 +147,5 @@ AND t1.dtRef = t3.dtRef
 LEFT JOIN fs_education AS t4
 ON t1.idCliente = t4.idCliente
 AND t1.dtRef = t4.dtRef
+
+WHERE idadeDias IS NOT NULL

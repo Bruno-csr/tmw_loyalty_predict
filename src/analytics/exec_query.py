@@ -48,14 +48,14 @@ def exec_query(table, db_origin, db_target, dt_start, dt_stop, monthly=False):
 def main():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--table',  type=str, help='Tabela que será processada com o nome do arquivo')
-    parser.add_argument('--db_origin',  choices= ['loyalty-system', 'education-platform', 'analytics'], default='loyalty-system')
-    parser.add_argument('--db_target',  choices= ['analytics'], default='analytics')
+    parser.add_argument('--table',  type=str, help='Tabela que será processada com o nome do arquivo') # Nome da tabela a ser processada
+    parser.add_argument('--db_origin',  choices= ['loyalty-system', 'education-platform', 'analytics'], default='loyalty-system') # Banco de dados de origem
+    parser.add_argument('--db_target',  choices= ['analytics'], default='analytics')    # Banco de dados de destino
 
-    now = datetime.datetime.now().strftime('%Y-%m-%d')
-    parser.add_argument('--start', type=str, default=now)
-    parser.add_argument('--stop', type=str, default=now)
-    parser.add_argument('--monthly', action='store_true')
+    now = datetime.datetime.now().strftime('%Y-%m-%d')      # Data atual no formato 'YYYY-MM-DD'
+    parser.add_argument('--start', type=str, default=now)   # Data inicial do processamento
+    parser.add_argument('--stop', type=str, default=now)    # Data final do processamento
+    parser.add_argument('--monthly', action='store_true')   # Processar apenas o 1o dia do mês
 
     args = parser.parse_args()
 

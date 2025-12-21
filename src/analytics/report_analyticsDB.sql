@@ -1,1 +1,3 @@
-SELECT * FROM abt_fiel
+SELECT 
+*
+FROM fs_life_cycle

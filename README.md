@@ -55,7 +55,52 @@ As playlists oficiais do TMW (gratuitas) estão aqui:
 - [Git e GitHub](https://www.youtube.com/playlist?list=PLvlkVRRKOYFQyKmdrassLNxkzSMM6tcSL)
 
 ---
+## 🛠️ Configuração do Ambiente
 
+Este projeto utiliza o **Conda** para gerenciar o ambiente virtual e as dependências. Para evitar erros de compatibilidade e DLLs no Windows, siga as instruções abaixo.
+
+### 1. Pré-requisitos
+* Ter o [Anaconda](https://www.anaconda.com/download) ou [Miniconda](https://docs.conda.io/en/latest/miniconda.html) instalado.
+
+### 2. Criando o ambiente do zero
+Se você acabou de clonar o repositório, execute o comando abaixo no seu terminal (Anaconda Prompt) para criar o ambiente com **Python 3.13.7**:
+
+```bash
+conda env create -f environment.yml
+```
+
+### 3. Atualizando um ambiente existente
+Caso você já tenha o ambiente loyalty-predict criado, mas precise atualizar as versões para ficarem idênticas às do repositório:
+
+```bash
+conda env update -n loyalty-predict -f environment.yml --prune
+```
+
+### 4. Ativação e Uso
+Após a instalação, ative o ambiente:
+
+```bash
+conda activate loyalty-predict
+```
+
+### 5. Atualizando o 'enviroment.yml'
+Para garantir que todos os outros desenvolvedores fiquem com o mesmo ambiente (Python 3.13.7 e as mesmas bibliotecas), a melhor prática é criar um arquivo chamado environment.yml.
+
+```bash
+conda env export --no-builds > environment.yml
+```
+
+
+### No VS Code:
+
+1. Abra o projeto.
+2. Pressione Ctrl + Shift + P.
+3. Busque por Python: Select Interpreter.
+4. Selecione a opção que contém: ('loyalty-predict': conda).
+
+> Nota para usuários Windows: Se encontrar erros de ImportError: DLL load failed, tente abrir o VS Code diretamente pelo terminal do Anaconda após ativar o ambiente, digitando o comando code ..
+
+--- 
 ## 📚 Etapas do Desenvolvimento
 
 1. Entendimento do problema  
