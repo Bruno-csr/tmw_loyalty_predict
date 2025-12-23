@@ -93,7 +93,6 @@ SELECT
     t2.qtdeRPG,
     t2.qtdeChurnModel,
     t3.qtdeFrequencia,
-    t3.qtdeFrequencia,
     t3.descLifeCycleAtual,
     t3.descLifeCycle_D28,
     t3.pctCurioso,
