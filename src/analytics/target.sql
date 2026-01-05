@@ -1,4 +1,4 @@
--- DROP TABLE IF EXISTS abt_fiel;
+DROP TABLE IF EXISTS abt_fiel;
 CREATE TABLE IF NOT EXISTS abt_fiel AS
 
 WITH tb_join AS (

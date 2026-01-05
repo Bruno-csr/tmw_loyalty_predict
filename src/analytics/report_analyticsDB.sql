@@ -1,2 +1,3 @@
-Select * FROM abt_fiel
-order BY IdCliente, dtRef;
+Select *
+from fs_life_cycle
+where pctDesencantada is null

@@ -60,7 +60,7 @@ s_nas
 
 #%%
 
-cat_features = ['descLifeCycleAtual', 'descLifeCycle_D28']  #Lista de variáveis categóricas
+cat_features = ['descLifeCycleAtual', 'descLifeCycleD28']  #Lista de variáveis categóricas
 num_features = list(set(features) - set(cat_features))  #Lista de variáveis numéricas = features - cat_features
 
 df_train = X_train.copy()           #Copia X_train para df_train
@@ -70,9 +70,7 @@ df_train[num_features] = df_train[num_features].astype(float)  #Garante que as v
 
 bivariada = df_train.groupby(target)[num_features].median().T  #Média das variáveis numéricas por classe do target
 bivariada['ratio'] = (bivariada[1] + 0.001) / (bivariada[0] + 0.001)     #Razão entre as medianas das classes do target
-bivariada.sort_values('ratio', ascending=False)                         #Ordena pela razão
-bivariada
-
+bivariada.sort_values(by='ratio', ascending=False)                         #Ordena pela razão
 # %% EXPLICAÇÃO
 ### ANÁLISE BIVARIADA DAS VARIÁVEIS NUMÉRICAS
 
@@ -93,36 +91,33 @@ bivariada
 df_train.groupby('descLifeCycleAtual')[target].mean()   #Média do target por categoria
 
 #%%
-df_train.groupby('descLifeCycle_D28')[target].mean()
+df_train.groupby('descLifeCycleD28')[target].mean()
 
-
-#%%
-
+# %%
 # MODIFY - DROP
 # FERRAMENTA: FEATURE SELECTION
 
 X_train[num_features] = X_train[num_features].astype(float)  #Garante que as variáveis numéricas estão no formato float
 
 to_remove = bivariada[bivariada['ratio'] == 1].index.tolist()  #Lista de variáveis para remoção (ratio = 1)
-
 drop_features = selection.DropFeatures(to_remove)   #Cria o objeto DropFeatures
 #%%
 
 # MODIFY - MISSING
 
-fill_0 = ['python2025']
-input_0 = imputation.ArbitraryNumberImputer(
+fill_0 = ['python2025', 'github2025', 'sql2020']
+imput_0 = imputation.ArbitraryNumberImputer(
     arbitrary_number=0, 
     variables=fill_0
             ) #Cria o objeto ArbitraryNumberImputer para preencher com 0
 
-fill_new = ['descLifeCycle_D28']
-input_new = imputation.CategoricalImputer(
-    fill_value='Não usuario', 
+fill_new = ['descLifeCycleD28']
+imput_new = imputation.CategoricalImputer(
+    fill_value='Nao-Usuario', 
     variables=fill_new
             )  #Cria o objeto CategoricalImputer para preencher com 'Não usuario'
 
-fill_1000 = ['avgIntntervaloDiasVida', 'avgIntntervaloDiasD28', 'qtdeDiasUltAtividades']
+fill_1000 = ['qtdDiasUltiAtividade', 'avgIntervaloDiasVida', 'avgIntervaloDiasD28']
 imput_1000 = imputation.ArbitraryNumberImputer(
     arbitrary_number=1000, 
     variables=fill_1000
@@ -134,24 +129,25 @@ imput_1000 = imputation.ArbitraryNumberImputer(
 
 onehot = encoding.OneHotEncoder(variables=cat_features)  #Cria o objeto OneHotEncoder
 
+## Caso esteja usando muitas categorias, pode ser interessante, em vez de usar o OneHotEncoder padrão, usar o MeanEncoder.
+## Isso porque o OneHotEncoder pode criar muitas variáveis, o que pode levar a problemas de dimensionalidade.
+## O MeanEncoder cria uma variável numérica para cada categoria, representando a média do target. Por exemplo:
+## meanEnconder = encoding.MeanEncoder(variables=[descLifeCycleAtual, descLifeCycleD28], target=target)
+## Retornando uma estrutura de colunas como: descLifeCycleAtual_mean, descLifeCycleD28_mean
+
+## ⚠️ Estudar mais essa forma "mean encoding"
+
+
+# %%
+
 # MODIFY - APLICA TRANSFORMAÇÕES NO DATASET
-X_train_transform = drop_features.fit_transform(X_train)            #Aplica o DropFeatures em X_train
-X_train_transform = input_0.fit_transform(X_train_transform)        #Aplica o ArbitraryNumberImputer em X_train
-X_train_transform = input_new.fit_transform(X_train_transform)      #Aplica o CategoricalImputer em X_train
-X_train_transform = imput_1000.fit_transform(X_train_transform)     #Aplica o ArbitraryNumberImputer em X_train
+
+X_train_transform = drop_features.fit_transform(X_train)
+X_train_transform = imput_0.fit_transform(X_train_transform)
+X_train_transform = imput_new.fit_transform(X_train_transform)
+X_train_transform = imput_1000.fit_transform(X_train_transform)
 X_train_transform = onehot.fit_transform(X_train_transform)         #Aplica o OneHot
-
-# %%
-## ⚠️⚠️VERIFICAR O PORQUE AINDA TEM MISSING NAS COLUNAS ABAIXO
-fill_pct = ['pctCurioso','pctFiel','pctReconquistada','pctReborn','pctTurista','pctDesencantada','pctZumbi']
-imput_pct = imputation.ArbitraryNumberImputer(
-    arbitrary_number=0,
-    variables=fill_pct
-            ) #Cria o objeto ArbitraryNumberImputer para preencher com 0
-
-X_train_transform = imput_pct.fit_transform(X_train_transform)     #Aplica o ArbitraryNumberImputer em X_train
-
-# %%
+#%%
 
 X_train_transform.head()
 # %%
@@ -161,11 +157,16 @@ X_train_transform.head()
 from sklearn import tree
 from sklearn import ensemble
 
-# model = tree.DecisionTreeClassifier(random_state=42, min_samples_leaf=10)        #Cria o modelo DecisionTreeClassifier com o min_samples_leaf que evita overfitting. Ou seja, cada folha terá no mínimo 10 amostras.
+# %%
+
+# MODEL - DECISION TREE
+model = tree.DecisionTreeClassifier(random_state=42)        #Cria o modelo DecisionTreeClassifier com o min_samples_leaf que evita overfitting. Ou seja, cada folha terá no mínimo 10 amostras.
+model.fit(X_train_transform, y_train)   #Treina o modelo
+
+#%% 
 model = ensemble.AdaBoostClassifier(random_state=42, 
                                     n_estimators=150, 
                                     learning_rate=0.01)
-
 model.fit(X_train_transform, y_train)   #Treina o modelo
 
 
@@ -175,11 +176,11 @@ model.fit(X_train_transform, y_train)   #Treina o modelo
 
 from sklearn import metrics
 
-y_pred_train = model.predict(X_train_transform)            #Faz a predição na base de treino
-y_proba_train = model.predict_proba(X_train_transform)  #Faz a predição de probabilidade na base de treino
+y_pred_train = model.predict(X_train_transform)             #Faz a predição na base de treino
+y_proba_train = model.predict_proba(X_train_transform)      #Faz a predição de probabilidade na base de treino
 
-acc_train = metrics.accuracy_score(y_train, y_pred_train)   #Calcula a acurácia na base de treino
-auc_train = metrics.roc_auc_score(y_train, y_proba_train[:,1])   #Calcula a AUC na base de treino
+acc_train = metrics.accuracy_score(y_train, y_pred_train)       #Calcula a acurácia na base de treino
+auc_train = metrics.roc_auc_score(y_train, y_proba_train[:,1])  #Calcula a AUC na base de treino
 
 print(f'Acurácia Treino: {acc_train:.2f}')
 print(f'AUC Treino: {auc_train:.2f}')
@@ -187,11 +188,10 @@ print(f'AUC Treino: {auc_train:.2f}')
 # %%
 
 X_test_transform = drop_features.transform(X_test)           
-X_test_transform = input_0.transform(X_test_transform)        
-X_test_transform = input_new.transform(X_test_transform)      
+X_test_transform = imput_0.transform(X_test_transform)        
+X_test_transform = imput_new.transform(X_test_transform)      
 X_test_transform = imput_1000.transform(X_test_transform)     
 X_test_transform = onehot.transform(X_test_transform)         
-X_test_transform = imput_pct.transform(X_test_transform)      
 
 y_pred_test = model.predict(X_test_transform)            #Faz a predição na base de treino
 y_proba_test = model.predict_proba(X_test_transform)  #Faz a predição de probabilidade na base de treino
@@ -203,6 +203,14 @@ auc_test = metrics.roc_auc_score(y_test, y_proba_test[:,1])   #Calcula a AUC na 
 print(f'Acurácia Teste: {acc_test}')
 print(f'AUC Teste: {auc_test}')
 
+## Acurácia vs AUC
+## Acurácia é a proporção de previsões corretas (tanto positivas quanto negativas) em relação ao total de previsões feitas.
+## AUC (Área sob a Curva ROC) mede a capacidade do modelo de distinguir entre classes positivas e negativas, independentemente do limiar de decisão.
+## Enquanto a acurácia pode ser influenciada pelo desequilíbrio das classes, a AUC fornece uma visão mais robusta do desempenho do modelo em diferentes limiares de classificação.
+## Logo, em cenários com classes desbalanceadas, a AUC é frequentemente considerada uma métrica mais confiável do que a acurácia.
+## Acurácia, em resumo, avalia a precisão geral do modelo, enquanto a AUC avalia sua capacidade discriminativa.
+## Em liguagem simples, acurácia responde "Quantas vezes o modelo acertou?" e AUC responde "Quão bem o modelo separa as classes?".
+
 #%%
 
 y_pred_fodase = pd.Series([0]*y_test.shape[0])            #Faz a predição na base de treino
@@ -213,6 +221,13 @@ auc_fodase = metrics.roc_auc_score(y_test, y_proba_fodase)   #Calcula a AUC na b
 
 print(f'Acurácia Fodase: {acc_fodase}')
 print(f'AUC Fodase: {auc_fodase}')
+
+## O que aconteceu?
+## Na base de treino, o meu resultado de acurária e curva rock é 1.0, ou seja, perfeito.
+## Na "prova dos nove", o resultado de acurária e curva rock diferenciam, mostrando que talvez a acurácia não seja a melhor métrica para avaliar o modelo.
+## Quando jogamos todo mundo na mesma probabilidade (Modelo Fodasse) como se não fosse fiel (target=0), a acurácia é alta (porque a maioria não é fiel).
+## Mas a AUC é baixa (porque o modelo não consegue distinguir entre fiéis e não fiéis).
+## 0.5 para a auc é o valor de um modelo aleatório. Um modelo que não consegue distinguir entre as classes. Ou seja, o modelo fodasse não tem capacidade preditiva nenhuma.
 # %%
 features_names = X_train_transform.columns.tolist()
 
