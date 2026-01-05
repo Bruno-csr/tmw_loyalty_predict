@@ -162,7 +162,9 @@ from sklearn import tree
 from sklearn import ensemble
 
 # model = tree.DecisionTreeClassifier(random_state=42, min_samples_leaf=10)        #Cria o modelo DecisionTreeClassifier com o min_samples_leaf que evita overfitting. Ou seja, cada folha terá no mínimo 10 amostras.
-model = ensemble.RandomForestClassifier(random_state=42, n_estimators=150, n_jobs=-1, min_samples_leaf=60)
+model = ensemble.AdaBoostClassifier(random_state=42, 
+                                    n_estimators=150, 
+                                    learning_rate=0.01)
 
 model.fit(X_train_transform, y_train)   #Treina o modelo
 
@@ -216,3 +218,6 @@ features_names = X_train_transform.columns.tolist()
 
 feature_importance = pd.Series(model.feature_importances_, index=features_names)
 feature_importance.sort_values(ascending=False)
+
+# https://youtu.be/oeoe8mUOQfY
+# %%

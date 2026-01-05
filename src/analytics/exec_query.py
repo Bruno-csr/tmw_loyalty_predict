@@ -53,7 +53,7 @@ def main():
     parser.add_argument('--db_target',  choices= ['analytics'], default='analytics')    # Banco de dados de destino
 
     now = datetime.datetime.now().strftime('%Y-%m-%d')      # Data atual no formato 'YYYY-MM-DD'
-    parser.add_argument('--start', type=str, default=now)   # Data inicial do processamento
+    parser.add_argument('--start', type=str, default='2024-03-01')   # Data inicial do processamento
     parser.add_argument('--stop', type=str, default=now)    # Data final do processamento
     parser.add_argument('--monthly', action='store_true')   # Processar apenas o 1o dia do mês
 

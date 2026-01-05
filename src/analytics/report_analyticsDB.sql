@@ -1,6 +1,2 @@
-SELECT 
-    qtdeFrequencia,
-    qtdeFrequencia,
-    qtdeFrequencia,
-    qtdeAtivacaoD28
-FROM abt_fiel
+Select * FROM abt_fiel
+order BY IdCliente, dtRef;
