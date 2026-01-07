@@ -1,12 +1,21 @@
 # %%
 import pandas as pd
 
+import matplotlib.pyplot as plt
+
 from sklearn import model_selection
+from sklearn import tree
+from sklearn import ensemble
+from sklearn import pipeline
+from sklearn import metrics
 
 from feature_engine import selection
 from feature_engine import imputation
 from feature_engine import encoding
 
+import mlflow
+mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_experiment(experiment_id=1)
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -79,16 +88,15 @@ df_train.groupby('descLifeCycleAtual')[target].mean()
 
 df_train.groupby('descLifeCycleD28')[target].mean()
 
-# %%
-
+#%%
 # MODIFY - DROP
 
 X_train[num_features] = X_train[num_features].astype(float)
 
 to_remove = bivariada[bivariada['ratio'] == 1].index.tolist()
 drop_features = selection.DropFeatures(to_remove)
-#%%
 
+#%%
 # MODIFY - MISSING
 
 fill_0 = ['python2025', 'github2025', 'sql2020']
@@ -113,91 +121,108 @@ imput_1000 = imputation.ArbitraryNumberImputer(
 
 onehot = encoding.OneHotEncoder(variables=cat_features)
 
-# %%
-
-# MODEL
-
-from sklearn import tree
-from sklearn import ensemble
-
-#%% 
-
-# MODEL - ADA BOOST
-model = ensemble.AdaBoostClassifier(
+# MODEL - DEFINIÇÃO DO MODELO
+model = ensemble.RandomForestClassifier(
     random_state=42, 
-    n_estimators=150, 
-    learning_rate=0.1
+    n_estimators=400, 
+    min_samples_leaf=50
 )
 
-#%%
-
-# CRIANDO PIPELINE
-
-from sklearn import pipeline
-
-model_pipeline = pipeline.Pipeline(steps=[
-    ('Remocao de Features', drop_features),
-    ('Imputacao de zeros', imput_0),
-    ("Imputacao de 'Não-Usuaio'", imput_new),
-    ('Imputacao de 1000', imput_1000),
-    ('One Hot Encoding', onehot),
-    ('Algoritmo', model)
-])
-
-model_pipeline.fit(X_train, y_train)
-
 # %%
+# MODELING - PIPELINE
+with mlflow.start_run() as r:
 
-# ASSESS - MÉTRICAS
+    mlflow.sklearn.autolog()
 
-from sklearn import metrics
+    
 
-y_pred_train = model_pipeline.predict(X_train)
-y_proba_train = model_pipeline.predict_proba(X_train)
+    # CRIANDO PIPELINE
 
-acc_train = metrics.accuracy_score(y_train, y_pred_train)
-auc_train = metrics.roc_auc_score(y_train, y_proba_train[:,1])
+    model_pipeline = pipeline.Pipeline(steps=[
+        ('Remocao de Features', drop_features),
+        ('Imputacao de zeros', imput_0),
+        ("Imputacao de Nao-Usuario", imput_new),
+        ('Imputacao de 1000', imput_1000),
+        ('One Hot Encoding', onehot),
+        ('Algoritmo', model)
+    ])
 
-print(f'Acurácia Treino: {acc_train:.2f}')
-print(f'AUC Treino: {auc_train:.2f}')
+    model_pipeline.fit(X_train, y_train)
 
-# %%       
+    # ASSESS - MÉTRICAS
 
-y_pred_test = model_pipeline.predict(X_test)
-y_proba_test = model_pipeline.predict_proba(X_test)
+    y_pred_train = model_pipeline.predict(X_train)
+    y_proba_train = model_pipeline.predict_proba(X_train)
 
-acc_test = metrics.accuracy_score(y_test, y_pred_test)
-auc_test = metrics.roc_auc_score(y_test, y_proba_test[:,1])
+    acc_train = metrics.accuracy_score(y_train, y_pred_train)
+    auc_train = metrics.roc_auc_score(y_train, y_proba_train[:,1])
+
+    print(f'Acurácia Treino: {acc_train:.2f}')
+    print(f'AUC Treino: {auc_train:.2f}')
+
+    y_pred_test = model_pipeline.predict(X_test)
+    y_proba_test = model_pipeline.predict_proba(X_test)
+
+    acc_test = metrics.accuracy_score(y_test, y_pred_test)
+    auc_test = metrics.roc_auc_score(y_test, y_proba_test[:,1])
 
 
-print(f'Acurácia Teste: {acc_test}')
-print(f'AUC Teste: {auc_test}')
+    print(f'Acurácia Teste: {acc_test}')
+    print(f'AUC Teste: {auc_test}')
 
-# %%
+    # PREDICT OOT
+    X_oot = df_oot[features]
+    y_oot = df_oot[target]   
 
-# PREDICT OOT
-X_oot = df_oot[features]
-y_oot = df_oot[target]   
+    y_pred_oot = model_pipeline.predict(X_oot)
+    y_proba_oot = model_pipeline.predict_proba(X_oot)
 
-y_pred_oot = model_pipeline.predict(X_oot)
-y_proba_oot = model_pipeline.predict_proba(X_oot)
+    acc_oot = metrics.accuracy_score(y_oot, y_pred_oot)
+    auc_oot = metrics.roc_auc_score(y_oot, y_proba_oot[:,1])
 
-acc_oot = metrics.accuracy_score(y_oot, y_pred_oot)
-auc_oot = metrics.roc_auc_score(y_oot, y_proba_oot[:,1])
+    print(f'Acurácia OOT: {acc_oot}')
+    print(f'AUC OOT: {auc_oot}')
 
-print(f'Acurácia OOT: {acc_oot}')
-print(f'AUC OOT: {auc_oot}')
+    y_pred_fodase = pd.Series([0]*y_test.shape[0])
+    y_proba_fodase = pd.Series([y_train.mean()]*y_test.shape[0])
 
-#%%
+    acc_fodase = metrics.accuracy_score(y_test, y_pred_fodase)
+    auc_fodase = metrics.roc_auc_score(y_test, y_proba_fodase)
 
-y_pred_fodase = pd.Series([0]*y_test.shape[0])
-y_proba_fodase = pd.Series([y_train.mean()]*y_test.shape[0])
+    print(f'Acurácia Fodase: {acc_fodase}')
+    print(f'AUC Fodase: {auc_fodase}')
 
-acc_fodase = metrics.accuracy_score(y_test, y_pred_fodase)
-auc_fodase = metrics.roc_auc_score(y_test, y_proba_fodase)
+    mlflow.log_metrics({
+        "acc_train": acc_train,
+        "auc_train": auc_train,
+        "acc_test": acc_test,
+        "auc_test": auc_test,
+        "acc_oot": acc_oot,
+        "auc_oot": auc_oot,
+        "acc_fodase": acc_fodase,
+        "auc_fodase": auc_fodase
+    })
 
-print(f'Acurácia Fodase: {acc_fodase}')
-print(f'AUC Fodase: {auc_fodase}')
+    roc_train = metrics.roc_curve(y_train, y_proba_train[:,1])
+    roc_test = metrics.roc_curve(y_test, y_proba_test[:,1])
+    roc_oot = metrics.roc_curve(y_oot, y_proba_oot[:,1])
+
+    plt.plot(roc_train[0], roc_train[1])
+    plt.plot(roc_test[0], roc_test[1])
+    plt.plot(roc_oot[0], roc_oot[1])
+
+    plt.legend([f'Treino: {auc_train:.4f}', 
+                f'Teste: {auc_test:.4f}', 
+                f'OOT: {auc_oot:.4f}'])
+
+    plt.plot([0,1], [0,1], '--', color='black')
+
+    plt.grid(True)
+    plt.title('Curva ROC')
+
+    plt.savefig('curva_roc.png')
+
+    mlflow.log_artifact('curva_roc.png')
 
 # %%
 
@@ -209,20 +234,3 @@ feature_importance = pd.Series(model_pipeline[-1].feature_importances_,
                                index=features_names)
 
 feature_importance.sort_values(ascending=False)
-
-# %%
-
-# ASSESS - PERSISTÊNCIA DO MODELO
-
-model_series = pd.Series(
-    {
-        "model":model_pipeline,
-        "features":features,
-        "auc_train":auc_train,
-        "auc_test":auc_test,
-        "auc_oot":auc_oot
-    }
-)
-
-model_series.to_pickle('model_fiel.pkl')
-# %%
