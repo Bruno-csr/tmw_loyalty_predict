@@ -121,20 +121,29 @@ imput_1000 = imputation.ArbitraryNumberImputer(
 
 onehot = encoding.OneHotEncoder(variables=cat_features)
 
-# MODEL - DEFINIÇÃO DO MODELO
-model = ensemble.RandomForestClassifier(
-    random_state=42, 
-    n_estimators=400, 
-    min_samples_leaf=50
+#%%
+# MODEL - ALGORÍTIMO
+
+model = ensemble.AdaBoostClassifier(
+    random_state=42
 )
 
-# %%
-# MODELING - PIPELINE
+params = {
+    'n_estimators': [50, 100, 200, 300, 400, 500, 600, 800, 1000],
+    'learning_rate': [0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.9, 0.99]
+}
+
+grid = model_selection.GridSearchCV(model, 
+                                    param_grid=params, 
+                                    cv=5, 
+                                    scoring='roc_auc',
+                                    refit=True,
+                                    verbose=3,
+                                    n_jobs=-1)
+
 with mlflow.start_run() as r:
 
     mlflow.sklearn.autolog()
-
-    
 
     # CRIANDO PIPELINE
 
@@ -144,7 +153,7 @@ with mlflow.start_run() as r:
         ("Imputacao de Nao-Usuario", imput_new),
         ('Imputacao de 1000', imput_1000),
         ('One Hot Encoding', onehot),
-        ('Algoritmo', model)
+        ('Algoritmo', grid)
     ])
 
     model_pipeline.fit(X_train, y_train)
@@ -165,7 +174,6 @@ with mlflow.start_run() as r:
 
     acc_test = metrics.accuracy_score(y_test, y_pred_test)
     auc_test = metrics.roc_auc_score(y_test, y_proba_test[:,1])
-
 
     print(f'Acurácia Teste: {acc_test}')
     print(f'AUC Teste: {auc_test}')
@@ -191,6 +199,9 @@ with mlflow.start_run() as r:
 
     print(f'Acurácia Fodase: {acc_fodase}')
     print(f'AUC Fodase: {auc_fodase}')
+
+    print("Melhores parâmetros:", grid.best_params_)
+    print("Melhor score (AUC médio na CV):", grid.best_score_)
 
     mlflow.log_metrics({
         "acc_train": acc_train,
@@ -224,11 +235,14 @@ with mlflow.start_run() as r:
 
     mlflow.log_artifact('curva_roc.png')
 
+
+
+
 # %%
 
 features_names = (model_pipeline[:-1].transform(X_train.head(1))
-                                    .columns
-                                    .tolist()) # pega o nome das features pós transformação
+                                     .columns
+                                     .tolist()) # pega o nome das features pós transformação
 
 feature_importance = pd.Series(model_pipeline[-1].feature_importances_,
                                index=features_names)

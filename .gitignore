@@ -23,3 +23,6 @@ PassoAPassoGit.txt
 #Base de dados
 data/analytics/database.db
 *.db
+
+#Kaggle API Key
+kaggle.json
