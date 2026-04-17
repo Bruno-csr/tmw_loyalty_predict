@@ -9,6 +9,11 @@ Thumbs.db
 __pycache__/
 *.pyc
 .env
+.venv
+
+# Artefatos
+mlruns
+mlartifacts
 
 # Node (se usar)
 node_modules/

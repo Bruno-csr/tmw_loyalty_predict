@@ -1,0 +1,21 @@
+#%%
+
+import os
+import dotenv
+
+dotenv.load_dotenv('../../.env')
+
+
+from kaggle import api
+datasets = [
+    'teocalvo/teomewhy-loyalty-system', 
+    'teocalvo/teomewhy-education-platform'
+    ]
+
+for d in datasets:
+    dataset_name = d.split('teomewhy-')[-1]
+    print(f'Baixando dataset: {dataset_name}')
+    path = f'../../data/{dataset_name}'
+    api.dataset_download_file(d, 'database.db', path)
+
+# %%
