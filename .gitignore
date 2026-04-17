@@ -1,6 +1,7 @@
 # Arquivos de sistema
 .DS_Store
 Thumbs.db
+requirements.txt
 
 # VSCode
 .vscode/
@@ -12,8 +13,8 @@ __pycache__/
 .venv
 
 # Artefatos
-mlruns
-mlartifacts
+mlruns/
+mlartifacts/
 
 # Node (se usar)
 node_modules/
