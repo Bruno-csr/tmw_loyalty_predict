@@ -30,4 +30,7 @@ run:
 	cd src\engineering && python get_data.py
 	cd src\analytics && python pipeline_analytics.py
 
+
+#Alvo padrão
+.PHONY: all
 all: setup run

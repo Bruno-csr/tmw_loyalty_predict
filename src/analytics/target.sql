@@ -16,8 +16,8 @@ WITH tb_join AS (
     ON t1.IdCliente = t2.IdCliente
     AND date(t1.dtRef, '+28 day') = date(t2.dtRef)
 
-    WHERE ((t1.dtRef >= '2024-03-01' AND t1.dtRef <= '2025-08-01')
-            OR t1.dtRef='2025-09-01')
+    WHERE ((t1.dtRef >= '2025-01-01' AND t1.dtRef <= '2026-02-01')
+            OR t1.dtRef='2026-03-01')
     AND t1.descLifeCycle <> '05-ZUMBI'
 
 ),

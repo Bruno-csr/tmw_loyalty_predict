@@ -22,3 +22,4 @@ data['predict'] = predict
 
 data
 # %%
+model
