@@ -5,9 +5,9 @@ VENV_DIR=.venv
 
 .PHONY: setup
 setup:
+
 	@echo "Criando ambiente virtual..."
 	if exist $(VENV_DIR) rmdir /s /q $(VENV_DIR)
-
 	python -m venv $(VENV_DIR)
 
 	@echo "Instalando pipreqs..."
@@ -24,13 +24,28 @@ setup:
 	@echo "Instalando dependências..."
 	$(VENV_DIR)\Scripts\pip.exe install -r requirements.txt
 
-.PHONY: run
-run:
-	@echo "Executando pipeline..."
+
+.PHONY: collect
+collect:
+	@echo "Executando pipeline (engineering)..."
 	cd src\engineering && python get_data.py
+
+
+.PHONY: etl
+etl:
+	@echo "Executando scripts de análise..."
 	cd src\analytics && python pipeline_analytics.py
+
+
+.PHONY: predict
+predict:
+	@echo "Executando predicao..."
+	cd src\analytics && python predict_fiel.py
 
 
 #Alvo padrão
 .PHONY: all
-all: setup run
+all: setup collect etl predict
+
+.PHONY: run
+run: collect etl predict
